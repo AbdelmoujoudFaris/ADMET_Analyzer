@@ -54,16 +54,6 @@ except ImportError:
     print("WARNING: RDKit not available.  pip install rdkit pillow")
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  Application icon  (16×16 molecule glyph, base64-encoded PNG)
-# ─────────────────────────────────────────────────────────────────────────────
-_ICON_B64 = (
-    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA"
-    "CXBIWXMAAA3XAAAN1wFCKJt4AAAAB3RJTUUH6AUEDiMm8+g4tQAAABl0RVh0Q29tbWVudABD"
-    "cmVhdGVkIHdpdGggR0lNUFeBDhcAAAFeSURBVDjLY2AYBYMHMCILvP3//z8DGQAAAP//AwCx"
-    "BwIFAAAABmJLR0QA/wD/AP+gvaeTAAAADElEQVQI12NgGAQAABAAAbDsG9QAAAAASUVORK5CYII="
-)
-
-# ─────────────────────────────────────────────────────────────────────────────
 #  Colour palette  (Nature / Science style)
 # ─────────────────────────────────────────────────────────────────────────────
 PAL = {
@@ -679,9 +669,7 @@ class ADMETPlotter:
         ax.grid(True, alpha=0.3, axis="y")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  GUI
-# ══════════════════════════════════════════════════════════════════════════════
+# ── GUI ──────────────────────────────────────────────────────────────────
 class ADMETGUI:
     """
     Professional Tkinter GUI for ADMET Analyzer Pro.
@@ -704,14 +692,14 @@ class ADMETGUI:
         self.root.geometry("1480x940")
         self.root.configure(bg=self.BG_MAIN)
         self.root.resizable(True, True)
-
-        # Set icon
+        
+        # Remove the default Tkinter icon (feather/leaf) by setting a blank icon
         try:
-            icon_data = base64.b64decode(_ICON_B64)
-            icon_img  = tk.PhotoImage(data=base64.b64encode(icon_data))
-            self.root.iconphoto(True, icon_img)
+            # Create a transparent 1x1 pixel icon
+            icon = tk.PhotoImage(width=1, height=1)
+            self.root.iconphoto(True, icon)
         except Exception:
-            pass
+            pass  # If it fails, just continue without changing the icon
 
         if not RDKIT_AVAILABLE:
             messagebox.showerror(
@@ -771,22 +759,18 @@ class ADMETGUI:
         hdr.grid(row=0, column=0, sticky="ew")
         hdr.columnconfigure(1, weight=1)
 
-        # Molecule icon drawn with Canvas
-        ico = tk.Canvas(hdr, width=42, height=42, bg=self.ACCENT,
-                        highlightthickness=0)
-        ico.grid(row=0, column=0, padx=(14, 6), pady=8)
-        self._draw_mol_icon(ico)
-
+        # No icon - only title text
         ttk.Label(hdr,
                   text=f"  {self.APP_TITLE}",
-                  font=("Arial", 16, "bold"),
+                  font=("Arial", 18, "bold"),
                   foreground="white", background=self.ACCENT
-                  ).grid(row=0, column=1, sticky="w")
+                  ).grid(row=0, column=0, sticky="w", padx=(15, 0), pady=8)
+        
         ttk.Label(hdr,
-                  text=f"  35+ descriptors  |  Lipinski · Veber · Ghose · REOS · QED  |  v{self.APP_VERSION}",
+                  text=f"35+ descriptors  |  Lipinski · Veber · Ghose · REOS · QED  |  v{self.APP_VERSION}",
                   font=("Arial", 9), foreground="#D6EAF8",
                   background=self.ACCENT
-                  ).grid(row=0, column=2, sticky="e", padx=16)
+                  ).grid(row=0, column=1, sticky="e", padx=16)
 
         # ── Body PanedWindow ─────────────────────────────────────────────────
         body = tk.PanedWindow(self.root, orient=tk.HORIZONTAL,
@@ -809,8 +793,7 @@ class ADMETGUI:
         self.status_var = tk.StringVar(
             value="Ready — enter a SMILES or load a file (CSV / SDF / TXT)")
         sb = ttk.Label(self.root, textvariable=self.status_var,
-                       relief="sunken", anchor="w",
-                       font=("Arial", 9), padding=(8, 3))
+                      relief=tk.SUNKEN, anchor=tk.W, padding=(6, 3))
         sb.grid(row=2, column=0, sticky="ew")
 
     # ── Left panel ────────────────────────────────────────────────────────────
@@ -937,27 +920,6 @@ class ADMETGUI:
         self.notebook = ttk.Notebook(viz_frame)
         self.notebook.grid(row=0, column=0, sticky="nsew")
 
-    # ── Molecule icon on canvas ───────────────────────────────────────────────
-
-    def _draw_mol_icon(self, canvas):
-        """Draw a tiny benzene-like icon on a Canvas widget."""
-        cx, cy, r = 21, 21, 14
-        n = 6
-        pts = [(cx + r * np.cos(np.pi / 2 + 2 * np.pi * k / n),
-                cy + r * np.sin(np.pi / 2 + 2 * np.pi * k / n))
-               for k in range(n)]
-        for i in range(n):
-            x1, y1 = pts[i]
-            x2, y2 = pts[(i + 1) % n]
-            canvas.create_line(x1, y1, x2, y2, fill="white", width=2)
-        ri = r * 0.55
-        canvas.create_oval(cx - ri, cy - ri, cx + ri, cy + ri,
-                            outline="white", width=1.5)
-        # atoms
-        for px, py in pts:
-            canvas.create_oval(px - 3, py - 3, px + 3, py + 3,
-                                fill="#A8D8EA", outline="white", width=1)
-
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _update_summary(self, p):
@@ -1035,20 +997,20 @@ class ADMETGUI:
         row("LogP (Crippen)",                 f"{p.get('LogP',0):.2f}")
         row("LogD estimate",                  f"{p.get('LogD_est',0):.2f}")
         row("TPSA",                           f"{p.get('TPSA',0):.2f}  Å²")
-        row("H-Bond Donors",                  str(p.get('HBD','—')))
-        row("H-Bond Acceptors",               str(p.get('HBA','—')))
-        row("Rotatable Bonds",                str(p.get('RotatableBonds','—')))
-        row("Molar Refractivity",             f"{p.get('MolRefractivity',0):.2f}")
-        row("Heavy Atoms",                    str(p.get('HeavyAtoms','—')))
-        row("Total Atoms",                    str(p.get('NumAtoms','—')))
-        row("Num Rings",                      str(p.get('NumRings','—')))
-        row("Aromatic Rings",                 str(p.get('NumAromaticRings','—')))
-        row("Aliphatic Rings",                str(p.get('NumAliphaticRings','—')))
-        row("Stereocentres",                  str(p.get('StereoCenters','—')))
-        row("Fsp3",                           f"{p.get('Fsp3',0):.3f}")
-        row("Formal Charge",                  str(p.get('FormalCharge','—')))
-        row("ESOL LogS (solubility)",         f"{p.get('ESOL_LogS',0):.2f}")
-        row("Water Solubility class",         str(p.get('WaterSolubility','—')))
+        row("H-Bond Donors",                   str(p.get('HBD','—')))
+        row("H-Bond Acceptors",                str(p.get('HBA','—')))
+        row("Rotatable Bonds",                 str(p.get('RotatableBonds','—')))
+        row("Molar Refractivity",              f"{p.get('MolRefractivity',0):.2f}")
+        row("Heavy Atoms",                     str(p.get('HeavyAtoms','—')))
+        row("Total Atoms",                     str(p.get('NumAtoms','—')))
+        row("Num Rings",                       str(p.get('NumRings','—')))
+        row("Aromatic Rings",                  str(p.get('NumAromaticRings','—')))
+        row("Aliphatic Rings",                 str(p.get('NumAliphaticRings','—')))
+        row("Stereocentres",                   str(p.get('StereoCenters','—')))
+        row("Fsp3",                            f"{p.get('Fsp3',0):.3f}")
+        row("Formal Charge",                    str(p.get('FormalCharge','—')))
+        row("ESOL LogS (solubility)",          f"{p.get('ESOL_LogS',0):.2f}")
+        row("Water Solubility class",          str(p.get('WaterSolubility','—')))
 
         W.insert(tk.END, "\n")
         block("DRUG-LIKENESS RULES")
