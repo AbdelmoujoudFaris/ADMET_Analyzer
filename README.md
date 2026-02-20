@@ -1,5 +1,5 @@
 # 🔬 ADMET Analyzer
-
+![ADMET Analyzer](https://github.com/AbdelmoujoudFaris/ADMET_Analyzer/raw/main/ADMET.jpg)
 > Publication-quality ADMET profiling tool for drug discovery with 2D molecular structure visualization.
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
