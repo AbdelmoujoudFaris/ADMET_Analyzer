@@ -126,14 +126,3 @@ Click **💾 Export Results** to save:
 
 MIT License — free to use, modify, and distribute with attribution.
 
----
-
-## 🤝 Contributing
-
-Pull requests welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-```
-git checkout -b feature/your-feature
-git commit -m "Add your feature"
-git push origin feature/your-feature
-```
